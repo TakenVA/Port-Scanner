@@ -9,20 +9,20 @@ This is a lightweight, multithreaded TCP port scanner written inside an Ubuntu L
 - **Input validation** used to maintain correct formating with clean error messages
 
 ## Usage 
-
-  python3 scanner.py -t 127.0.0.1 -p 1-1024
-  python3 scanner.py -t 192.168.1.5 -p 1-65535
-  python3 scanner.py -h
-
+'''
+python3 scanner.py -t 127.0.0.1 -p 1-1024
+python3 scanner.py -t 192.168.1.5 -p 1-65535
+python3 scanner.py -h
+'''
 If '-p' is not defined, ports 1-1024 are scanned by default. 
 
 
 ## Sample output
-
-  Port 22 is open  SSH-2.0-OpenSSH_9.6p1 Ubuntu
-  Port 631 is open  HTTP/1.0 400 Bad Request
-  Port 8000 is open  HTTP/1.0 200 OK
-
+'''
+Port 22 is open  SSH-2.0-OpenSSH_9.6p1 Ubuntu
+Port 631 is open  HTTP/1.0 400 Bad Request
+Port 8000 is open  HTTP/1.0 200 OK
+'''
 ## Engineering notes
 
 **Concurrency** The original problem was that each port was being scanned sequentially, which wastes a lot of time. Using 'ThreadPoolExecutor' with 100 workers lets many connection attemps occur at the same time.
