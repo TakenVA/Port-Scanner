@@ -38,6 +38,24 @@ def check_port(target, port):
 	return result == 0
 	#This returns either True or False depending on if the TCP was established. If It is it will return a 0 via the sock.connect, which will then make the return a boolean either True or False
 
+
+def grab_banner(target,port):
+	try:
+		with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+			sock.settimeout(2) #Did 2 seconds instead of 1 to give slow services more time
+			sock.connect((target, port)) #uses connect rather than connect_ex since we already know the port is open
+			try:
+				data = sock.recv(1024) #waits for the server to speak first (Servers like SSH answer here)
+			except socket.timeout: #This runs if nothing arrived in 2 second
+				sock.send(b"HEAD / HTTP/1.0\r\n\r\n") #Sends a minimal HTTP request and only asks for the response headers (b means bytes)
+				data = sock.recv(1024) #The servers reply, since we are waiting, gets saved into data if they reply
+			text = data.decode(errors="ignore").strip() #turns the recieved bytes into a string, errors=ignore skips any bytes that aren't valid text .strip removes whitespace and newlines
+			return text.splitlines()[0] if text else "" #Keeps only the first line since banners can't be long, if text check protects me from a index error on a empty list
+	except OSError: #Caches network problems including a second tiemout on a server that stays silent even after we send a http request
+		return""
+
+
+
 args = parser.parse_args()
 #reads what the user typed and puts it into args
 #so target would be args.target, and ports would be args.ports
@@ -53,7 +71,8 @@ end = int(end)
 
 def scan(port):
 	if check_port(args.target, port):
-		return port
+		banner = grab_banner(args.target, port)
+		return (port, banner)
 	return None
 #It returns the port number if the port is open, and it retuns the port number if it isn't too
 #The return None is optional since Python automatically returns none if it ends without a return so I added it to make the intentions clear
@@ -81,6 +100,9 @@ with ThreadPoolExecutor(max_workers=100) as executor:
 
 for result in results:
 	if result is not None:
-		print(f"Port {result} is open")
+		port, banner = result
+		print(f"Port {port} is open {banner}")
 #APPARENTLY LINUX DEFAULTS TO ABOUT 1,024 CONNECTIONS BY DEFAULT SO USING MORE THAN 500 WORKERS WILL CAUSE IT TO CRASH
 #I am using time to test this on the terminal to have it print out how long it took, I will have it scan every possible port which if I did that on the old port scanner it would cause it to crash. 
+
+
