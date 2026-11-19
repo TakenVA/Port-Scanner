@@ -1,5 +1,7 @@
 import socket
 import argparse 
+from concurrent.futures import ThreadPoolExecutor
+
 
 #The problem is the IP is encoded into the code itself, we need to user to type what machine they want to scan into the command line itself.
 #argparse is a helper that reads the lines after the python file and splits it up into pieces
@@ -35,7 +37,6 @@ def check_port(target, port):
 
 	return result == 0
 	#This returns either True or False depending on if the TCP was established. If It is it will return a 0 via the sock.connect, which will then make the return a boolean either True or False
-target = "127.0.0.1"
 
 args = parser.parse_args()
 #reads what the user typed and puts it into args
@@ -50,6 +51,36 @@ start = int(start)
 end = int(end)
 #int turns the strings into integers
 
-for port in range(start, end + 1):
+def scan(port):
 	if check_port(args.target, port):
-		print(f"Port {port} is open")
+		return port
+	return None
+#It returns the port number if the port is open, and it retuns the port number if it isn't too
+#The return None is optional since Python automatically returns none if it ends without a return so I added it to make the intentions clear
+
+
+ports = range(start, end + 1)
+#Self explanatory
+
+with ThreadPoolExecutor(max_workers=100) as executor:
+	results = executor.map(scan, ports)
+#I had to do a lot of research for this 
+#This creates a pool of up to 100 worker threads. 
+#The "as executor" gives the pool of workers a name so we can use it
+#the with statement is a context manager, it sets something up, runs the indented block then cleans up automatically
+#For a thread pool the cleanup is that the block waits until every worker is finished running then it shuts down the pool
+#This is convenient since we don't have to worry abbout closing anything
+#map means "apply this function to every item"
+#It takes scan and the list of ports and hands each port to a free worker and collects the answers. 
+#The results come back in the same order as ports even though the work can finish in a random order. 
+#It doesn't return a plain list, it returns a iterator which is something you loop over to get the values one by one
+#By the way, instead of doing scan(ports) the executor will take the ports and feed it into scan. 
+
+#So to make this easy to understand, to begin with, 100 workers will act immediately so ports 1 to 100 will be taken up immediately, some of those ports are closed, so the workers will immediately move on
+
+
+for result in results:
+	if result is not None:
+		print(f"Port {result} is open")
+#APPARENTLY LINUX DEFAULTS TO ABOUT 1,024 CONNECTIONS BY DEFAULT SO USING MORE THAN 500 WORKERS WILL CAUSE IT TO CRASH
+#I am using time to test this on the terminal to have it print out how long it took, I will have it scan every possible port which if I did that on the old port scanner it would cause it to crash. 
