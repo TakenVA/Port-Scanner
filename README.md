@@ -21,7 +21,9 @@ If '-p' is not defined, ports 1-1024 are scanned by default.
 ## Sample output
   '''
   Port 22 is open  SSH-2.0-OpenSSH_9.6p1 Ubuntu
+  '''
   Port 631 is open  HTTP/1.0 400 Bad Request
+  '''
   Port 8000 is open  HTTP/1.0 200 OK
   '''
 
