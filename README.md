@@ -4,7 +4,7 @@ This is a lightweight, multithreaded TCP port scanner written inside an Ubuntu L
 ## Features
 - **TCP connect scanning** using only the standard library
 - **Command-line interface** (`-t` target, `-p` port range) built using argeparse
-- **Multithreading** with `ThreadPoolExecutor` (100 workers by default)
+- **Multithreading** with `ThreadPoolExecutor` (using a pool of 100 workers)
 - **Banner grabbing** for services that announce themselves (SSH) and for services that require a request (HTTP)
 - **Input validation** used to maintain correct formating with clean error messages
 
@@ -35,4 +35,6 @@ Port 8000 is open  HTTP/1.0 200 OK
 
 **ONLY SCAN SYSTEMS YOU OWN OR HAVE EXPLICIT PERMISSION TO TEST**
 
+
+## Source Code 
 [See Code Here!](https://github.com/TakenVA/Port-Scanner/blob/main/scanner.py)
